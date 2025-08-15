@@ -1,32 +1,35 @@
-project('bootloader', 'c',
-  version : '0.1',
-  default_options : ['c_std=c11'])
+project('bootloader', 'c', 'cpp', version: '0.1', default_options: ['c_std=gnu11'])
 
-arm_toolchain = meson.get_compiler('c', native: false)
+arm_as = find_program('arm-none-eabi-as')
+arm_ld = find_program('arm-none-eabi-ld')
+arm_objcopy = find_program('arm-none-eabi-objcopy')
 
-asm_file = 'bootloader.S'
+bootloader_src = files('bootloader.S', 'src/startup.S')
 
-# Linker arguments to generate map file
-map_file = 'bootloader.map'
-link_args = [
-  '-nostdlib',
-  '-Ttext=0x00000000',
-  '-Wl,-Map=' + map_file
-]
+bootloader_obj = []
+foreach src : bootloader_src
+  bootloader_obj += custom_target(
+    src.basename() + '_obj',
+    input: src,
+    output: src.basename() + '.o',
+    command: [arm_as, '-mcpu=cortex-a7', '-o', '@OUTPUT@', '@INPUT@']
+  )
+endforeach
 
-executable('bootloader.elf', asm_file,
-  link_args : link_args,
-  install : false)
+bootloader_bin = custom_target(
+  'bootloader_bin',
+  input: bootloader_obj,
+  output: 'bootloader.bin',
+  command: [
+    arm_ld, '-T', 'linker.ld', '-Map=bootloader.map', '-o', 'bootloader.elf',
+    '@INPUT@'
+  ],
+  build_by_default: true
+)
 
-custom_target('bootloader.bin',
-  input : 'bootloader.elf',
-  output : 'bootloader.bin',
-  command : ['arm-none-eabi-objcopy', '-O', 'binary', '@INPUT@', '@OUTPUT@'],
-  build_by_default : true)
-
-# Optional: expose map file as build artifact
-custom_target('bootloader.map',
-  input : 'bootloader.elf',
-  output : map_file,
-  command : ['arm-none-eabi-objdump', '-h', '-x', '@INPUT@', '>', map_file],
-  build_by_default : false)
+bootloader_final = custom_target(
+  'bootloader_final',
+  input: bootloader_bin,
+  output: 'bootloader_final.bin',
+  command: [arm_objcopy, '-O', 'binary', 'bootloader.elf', '@OUTPUT@']
+)
