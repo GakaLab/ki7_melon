@@ -1,0 +1,11 @@
+[binaries]
+c = 'arm-none-eabi-gcc'
+as = 'arm-none-eabi-as'
+ld = 'arm-none-eabi-ld'
+objcopy = 'arm-none-eabi-objcopy'
+
+[host_machine]
+system = 'bare-metal'
+cpu_family = 'arm'
+cpu = 'cortex-a7'
+endian = 'little'
