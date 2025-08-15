@@ -1,24 +1,15 @@
 ENTRY(_start)
 
 SECTIONS {
-  . = 0x00000000;
+  /* Start placing code at offset 0xF4 to match preloader layout */
+  . = 0xF4;
 
-  .text : {
+  .text.boot : {
     KEEP(*(.text.boot))
-    *(.text*)
-  }
-
-  .data : {
-    *(.data*)
-  }
-
-  .bss : {
-    *(.bss*)
-    *(COMMON)
   }
 
   /DISCARD/ : {
+    *(.comment)
     *(.note*)
-    *(.comment*)
   }
 }
