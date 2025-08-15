@@ -40,8 +40,8 @@ main:
     msr cpsr_c, r0
 
 @ Clear memory region (e.g. .bss)
-    ldr r0, =0x80000000       @ Start address
-    ldr r1, =0x80001000       @ End address
+    ldr r0, =0x102000       @ Start address
+    ldr r1, =0x10cdb0       @ End address
     mov r2, #0                @ Value to store
 clear_loop:
     str r2, [r0], #4          @ Store and increment
@@ -49,8 +49,8 @@ clear_loop:
     bne clear_loop
 
 @ Setup stack pointer
-    ldr sp, =0x80002000
+    ldr sp, =0x267000
 
 @ Jump to next stage (e.g. U-Boot or kernel)
-    ldr r0, =0x80008000
+    ldr r0, =0x2743b0
     bx r0
